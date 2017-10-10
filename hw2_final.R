@@ -1,0 +1,149 @@
+#匯入一些package整理資料&畫圖
+
+library(dplyr)
+library(ggplot2)
+library(ggmap)
+library(mapproj)
+
+
+
+
+H <-  read.csv("C:/Users/Owner/Desktop/HIV.csv", header=TRUE)
+A <-  read.csv("C:/Users/Owner/Desktop/AIDS.csv", header=TRUE)
+
+
+
+#將中文標題命名為英文
+
+names(H)=c("country","diagnostic_year","diagnostic_month","gender","age","case")
+names(A)=c("diagnostic_year","diagnostic_month","gender","age","case","country")
+
+
+#Q1.在資料中診斷出HIV病毒的25-34歲且住在台北市的男性人數，感染AIDS病毒的人數分佈趨勢是如何？
+
+library(gridExtra)
+str(H)
+str(A)
+
+nh<-select(H,country,diagnostic_year,diagnostic_month,case,age,gender) %>%
+  filter(country=="台北市",age=="25-34",gender=="男")
+nh1 <- group_by(nh,diagnostic_year) %>%
+  summarise(sum(case))
+names(nh1) <- c("year","total_case")
+w1 <- ggplot(data=nh1,aes(x=year,y=total_case,group=1))+geom_line(colour="blue")+geom_point(colour="red")
+w1   
+
+na<-select(A,country,diagnostic_year,case,age,gender) %>%
+  filter(country=="台北市",age=="25-34",gender=="男")
+na1 <- group_by(na,diagnostic_year) %>%
+  summarise(sum(case))
+names(na1) <- c("year","total_case")
+w2<-ggplot(data=na1,aes(x=year,y=total_case,group=1)) +geom_line(color="green")+geom_point(colour="orange")
+w2
+p=grid.arrange(w1, w2, nrow=2)
+
+#分析結果發現HIV的走勢圖與AIDS相當相似，幾乎是確診有HIV感染，之後就會有AIDS發病，所以當發現HIV病毒感染後就應該立刻投藥治療，以便追蹤後續的病況
+
+
+#Q2.愛滋病多分布在台灣的哪個地區？(畫圖呈現)
+#合併個層級醫療院所
+
+hos <-  read.csv("C:/Users/Owner/Desktop/HIV_HOS.csv", header=TRUE)
+
+names(hos)=c("level","num","name","city_name","address","gpsy","gpsx")
+hoss<-hos
+hoss$city = substr(hoss$address, 1, 3)
+hoss = hoss[,c(6,7,8)]
+names(hoss) = c("gpsy", "gpsx","city")
+nhoss = hoss %>% 
+  group_by(city) %>%
+  summarise(mean(gpsx), mean(gpsy))
+
+names(nhoss) = c("city","gpsx", "gpsy")
+
+
+#2000年的分布情況
+nac1 = select(A,diagnostic_year,case,country) %>%
+  filter(diagnostic_year==2000)
+group_by(nac1,country) %>%
+  summarise(sum(case))
+names(nac1) = c("year","case", "city")
+nac1$city <- as.character(nac1$city)
+
+
+
+nn1 <- left_join(nac1,nhoss,by = c("city"="city"))
+
+nn1<-nn1[!is.na(nn1$gpsx),]
+nn1$case <- as.numeric(nn1$case)
+
+map <- get_map(location = "Taiwan",zoom = 8)
+
+ggmap(map)+geom_point(aes(x = gpsx, y = gpsy,size=case),color="pink",data = nn1)
+
+
+#2017年的分布情況
+nac = select(A,diagnostic_year,case,country) %>%
+  filter(diagnostic_year==2017)
+group_by(nac,country) %>%
+  summarise(sum(case))
+names(nac) = c("year","case", "city")
+nac$city <- as.character(nac$city)
+
+
+nn <- left_join(nac,nhoss,by = c("city"="city"))
+
+nn<-nn[!is.na(nn$gpsx),]
+nn$case <- as.numeric(nn$case)
+
+
+map <- get_map(location = "Taiwan",zoom = 8)
+
+ggmap(map)+geom_point(aes(x = gpsx, y = gpsy,size=case),color="pink",data = nn)
+
+#此圖可以看出2000年的時候，愛滋病的案例最大到3，但是到2017年時，愛滋病的案例最大則成長到10，可見愛滋病有成長的趨勢。又2000年，台中、新竹與台北地區都是愛滋病人數比較多的地區，但是到了2017年的時候，新竹與台中地區的愛滋病人數都有減少，有可能是這兩個地區對於愛滋病重視的程度比較高，在追蹤疾病、正確的投藥、衛教方面...的執行的比其他縣市好，因此各地的醫療院所應多加交流，學習彼此的優點
+
+
+#Q3.哪一個縣/市是最需要注意AIDS疾病?又AIDS疾病與死亡的分布圖情況如何?
+#得到AIDS疾病後與近年來統計死亡的圖形的比較
+
+D <-  read.csv("C:/Users/Owner/Desktop/DIE.csv", header=TRUE)
+
+
+
+#將中文標題命名為英文
+
+names(D)=c("death_year","death_month","gender","age","case","city")
+
+
+library(gridExtra)
+str(D)
+
+
+nnd<-select(D,city,death_year,case,age,gender) %>%
+  filter(age=="25-34",gender=="男")
+nnd1 <- group_by(nnd,city) %>%
+  summarise(sum(case))
+nnd1$city<-as.character(nnd1$city)
+str(nnd1)
+nn1 <- left_join(nnd1,nhoss,by = c("city"="city"))
+nn1<-nn1[!is.na(nn1$gpsx),]
+names(nn1) <- c("city","total_case","gpsx","gpsy")
+
+nn1<- ggplot(data=nn1,aes(x=city,y=total_case,group=1))+geom_line(colour="blue")+geom_point(colour="red")
+nn1
+
+
+nd<-select(D,city,death_year,case,age,gender) %>%
+  filter(city=="台北市",age=="25-34",gender=="男")
+nd1 <- group_by(nd,death_year) %>%
+  summarise(sum(case))
+names(nd1) <- c("year","total_case")
+d1 <- ggplot(data=nd1,aes(x=year,y=total_case,group=1))+geom_line(colour="blue")+geom_point(colour="red")
+d1   
+p=grid.arrange(d1, w2, nrow=2)
+
+
+
+#發現歷年來得到AIDs死亡人數集中最高的地方是在新北市，此為首要優先倡導的縣市
+#而AIDS死亡的高峰在1995年及2010年的前後兩年都是死亡高峰，對照2005年後得到AIDS的人數持續升高到2015年都還是高峰，明顯看出愛滋病成為台灣人民需要對抗的新疾病
