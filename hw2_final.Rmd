@@ -99,9 +99,9 @@ nn1$case <- as.numeric(nn1$case)
 map <- get_map(location = "Taiwan",zoom = 8)
 ggmap(map)+geom_point(aes(x = gpsx, y = gpsy,size=case),color="pink",data = nn1)
 
-#2017年的分布情況
+#2016年的分布情況
 nac = select(A,diagnostic_year,case,country) %>%
-  filter(diagnostic_year==2017)
+  filter(diagnostic_year==2016)
 bb <- group_by(nac,country) %>%
   summarise(sum(case))
 names(bb) = c("city","case")
@@ -118,10 +118,7 @@ map <- get_map(location = "Taiwan",zoom = 8)
 
 ggmap(map)+geom_point(aes(x = gpsx, y = gpsy,size=case),color="pink",data = nn)
 
-#此些愛滋病分布的地區，均有愛滋病治療的醫療院所或藥局，，可以看出2000年時雲林縣市有愛滋病的人數相較於2017年多、花蓮地區在2000年時也市有病例，但到2017年時變為沒有；
-#此外發現都市區如高雄、台北2017相較於2000年的愛滋病人數又增加，新竹市也有增加，台北高雄是台灣重要的直轄市，人口相當密集，推論此疾病有往都市盛行化的趨勢。
-
-
+#此些愛滋病分布的地區，均有愛滋病治療的醫療院所或藥局，2016年相較於2000年的病例數高出許多，其中又以新北市的病例數最多，高達200多人，而高雄、桃園、台北、台中、台南病例數亦高達100多人，此疾病有都市化趨勢，政府應多加宣導重視此疾病，結合衛教講座，可以先在病例數最多的新北市辦理講座，看看此區人民是否因觀念宣導，而有進一步的行為上的防護措施，進而讓其他地方也跟進
 
 ```
 
