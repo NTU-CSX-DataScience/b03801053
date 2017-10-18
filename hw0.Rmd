@@ -1,6 +1,6 @@
 ---
 title: "hw0"
-author: "b03801053"
+author: "b03801053 公衛四劉倢如"
 date: "2017/9/14"
 output: html_document
 ---
