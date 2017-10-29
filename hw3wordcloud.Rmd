@@ -1,0 +1,158 @@
+---
+title: "hw3"
+author: "b03801053公衛四劉倢如"
+date: "2017年10月29日"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+#install.packages("httr")
+#install.packages("rjson")
+#install.packages("httpuv")
+#install.packages("Rfacebook")
+#install.packages("plyr")
+#install.packages("NLP")
+#install.packages("tm")
+#install.packages("tmcn")
+#install.packages("rvest")
+#install.packages("xml2")
+
+#install.packages('tmcn', repo='http://nbcgib.uesc.br/mirrors/cran/')
+
+library(backports)
+library(httr)
+
+library(rjson)
+library(httpuv)
+library(Rfacebook)
+library(plyr)
+library(NLP)
+#install.packages("tm", repos="http://R-Forge.R-project.org")
+library(tm)
+library(tmcn)
+library(rvest)
+library(xml2)
+
+#Sys.setenv(JAVA_HOME="C:/Program Files/Java/jdk1.8.0_77/")
+#install.packages("rJava")
+#install.packages("SnowballC")
+#install.packages("Slam")
+#install.packages("Matrix")
+library(rJava)
+
+library(SnowballC)
+library(slam)
+
+library(Matrix)
+```
+
+
+
+```{r cars}
+
+prefex = "https://graph.facebook.com/v2.10/"
+
+token  = "EAACEdEose0cBAEFv7d1Q9dYWVhaIZANKwSiawUQ9sE8yPRLUgnDTdhoZAZCodP3v0pHLqNZAiz5RTANEQjK772kWuBQZCHKlNbTuK4eccdwfhTVG9tQqi5wZCS7xPj0L3ZCZBwGa3KUHjs40vRfbuNPmwnPeqx0ZBsdD7LG7r5cy5QA0SnFq3dUB1toOwzoR2HQoXL9Bofkhgh8rBw3yADM1COZB7kn9baiE6rRyQQPuWdhwZDZD"
+
+number=1
+
+attrs  = paste0("232716627404/posts?limit=",number,"&until=2017-10-29&since=2017-10-19&access_token=")
+
+url    = paste0(prefex, attrs, token)
+res    = GET(url)
+data <- content(res)
+
+groups= matrix(unlist(data$data))
+  
+  
+filename = paste0(1, ".txt")
+write.table(groups,filename)
+
+
+
+after  = data$paging$cursors$after
+nextflg= data$paging[2]
+
+count=1
+while(nextflg!=""){
+
+    
+count=count+1
+nexturl= paste0(prefex,attrs,"&after=",after,"&access_token=")
+
+url = paste0(nexturl, token)
+
+nextres= GET(url)
+ndata  = content(nextres)
+ngroups= matrix(unlist(ndata$data))
+
+
+
+after  = ndata$paging$cursors$after
+
+nextflg= ndata$paging[2]
+filename = paste0(count, ".txt")
+
+
+}
+
+```
+
+
+```{r pressure, echo=FALSE}
+library(NLP)
+library(tm)
+library(jiebaRD)
+library(jiebaR)
+library(RColorBrewer)
+library(wordcloud)
+```
+
+```{r}
+filenames <- list.files(getwd(), pattern="*.txt")
+files <- lapply(filenames, readLines)
+docs <- Corpus(VectorSource(files))
+
+
+
+toSpace <- content_transformer(function(x, pattern) {
+  return (gsub(pattern, " ", x))
+}
+
+)
+
+docs <- tm_map( docs,function( word ){ gsub( "[A-Za-z0-9]", "", word ) } )
+docs <- tm_map(docs,toSpace,"V1")
+docs <- tm_map(docs,toSpace,"\n")
+docs <- tm_map(docs,toSpace, "1")
+docs <- tm_map(docs,toSpace, "的")
+docs <- tm_map(docs,toSpace, "[A-Za-z0-9]")
+
+docs <- tm_map(docs, removePunctuation)
+docs <- tm_map(docs, removeNumbers)
+docs <- tm_map(docs, stripWhitespace)
+
+
+
+
+mixseg = worker()
+segment <- c("布里斯本","高雄","重劃區","合作會")
+new_user_word(mixseg,segment)
+
+jieba_tokenizer=function(d){
+  unlist(segment(d[[1]],mixseg))
+}
+seg = lapply(docs, jieba_tokenizer)
+freqFrame = as.data.frame(table(unlist(seg)))
+wordcloud(freqFrame$Var1,freqFrame$Freq,
+          min.freq=1,max.words=20,
+          random.order=TRUE, random.color=FALSE, 
+          rot.per=.1, colors=brewer.pal(5, "Dark2"),
+          ordered.colors=FALSE,use.r.layout=FALSE,
+          fixed.asp=TRUE)
+
+
+
+
+```
+
