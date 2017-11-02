@@ -1,5 +1,5 @@
 # b03801053
-<作品列表>
+<作品列>
 
 作業一：RMarkdown提案書 https://ntu-csx-datascience.github.io/b03801053/hw0.html
 
