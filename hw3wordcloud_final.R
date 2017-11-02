@@ -1,12 +1,3 @@
----
-title: "hw3"
-author: "b03801053公衛四劉倢如"
-date: "2017年10月29日"
-output: html_document
----
-
-```{r setup}
-#觀察臉書高雄市長陳菊 從2017/10/25~10/31對高雄地區的活動或政策有哪些？
 rm(list=ls(all.names=TRUE))
 #先把需要的package執行看存不存在
 library(httr)
@@ -23,15 +14,17 @@ library(rJava)
 library(SnowballC)
 library(slam)
 library(Matrix)
-```
 
+#要先有測試(測試是否可以抓的回來)
+#library(httr)
+#cURL = "https://graph.facebook.com/v2.10/kikuChen?fields=posts.limit(100)&access_token=EAACEdEose0cBAABEZBUhdq5upNo7muAJE0ccCXjcqH34NEnYkNGtD3ot1wRvnD7QoeDnnACdElpJ9poWtKkWZACHMclnerSJBoL23Fr7NZARZBzmLyxar5FNr9eF95MwECckm5D9z8mIod16ElbB5GxAHpuWLEDbFQnw8PQCDZBr7A64z0doZBJBNkXUp6J3AF60ltwLFfGgZDZD"
+#res = httr::GET(cURL)
+#posts = httr::content(res)
 
-
-```{r}
 
 prefex = "https://graph.facebook.com/v2.10/"
 #會變得
-token  = "EAACEdEose0cBAI0H7cOYWJTc8RvRGCQLgsLUKLKf1D793ZCObO7RhFFFHXL0yB5eMHmmuolZAn4qJJFtlOeSZCsPo1xz0MN9AoughihMCuOUHkBhikYHZCs7mZBdWpsYfYwQlZCSMRVA5fFnooe8vbdlZBkPjNxaC2GXZCa33AEshTV7ATyEoUDCTaaMGUyZADJHl3mZAsNBtbFwZDZD"
+token  = "EAACEdEose0cBAN9DUURMUwTObm190UUSeYBADsUJHfNgbGwr8S5bfZAmRPxyq2ArglB22EErcNItwNyosnIn8cNhIKVaexpMNOMZBBSIZBtA5OzmKaZAroOhhw3fMdCNI6bbuc1ITEjJlH8Gwp88XFxCKDpPz6MAgKoNRsLVwlNAqvc2senz86IlDneHl61ZCVwn1VrETIQZDZD"
 number=1
 #把正確的fb網址接起來
 attrs  = paste0("232716627404/posts?limit=",number,"&until=2017-10-31&since=2017-10-25&access_token=")
@@ -64,7 +57,7 @@ while(nextflg!= "NULL"){
   ngroups= matrix(unlist(ndata$data))
   #p1=ndata[["data"]][[1]]$message
   #p1=ndata$data[[1]]$message
-  ##可用try_catch來測試，while loop停在哪一段 可以記錄走到哪一段停止
+  #可用try_catch來測試，while loop停在哪一段 可以記錄走到哪一段停止
   
   after  = ndata$paging$cursors$after
   nextflg = ndata$paging[3]
@@ -75,20 +68,18 @@ while(nextflg!= "NULL"){
 }
 
 
-```
 
 
-```{r }
-#要做文字雲 抓一些需要用的套件
+
+
+
+#要做文字雲
 library(NLP)
 library(tm)
-library(jiebaRD)
-library(jiebaR)
+library(jiebaRD)#專門處理中文的斷詞
+library(jiebaR)#呼叫別人定義好的字典
 library(RColorBrewer)
 library(wordcloud)
-```
-
-```{r}
 #進行文本清理
 par(family='STKaiti')#讓文字顯示成中文
 filenames <- list.files(getwd(), pattern="*.txt")
@@ -135,7 +126,3 @@ wordcloud(freqFrame$Var1,freqFrame$Freq,
           ordered.colors=FALSE,use.r.layout=FALSE,
           fixed.asp=TRUE)
 
-#發現市長非常重視高雄，因為在詞頻統計下，得到最高的數字，再由文字雲看出，在他目前對高雄的規劃下，相當重視食品、環境、水質、與國際接軌的關係...等
-
-
-```
