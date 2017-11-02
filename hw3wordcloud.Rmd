@@ -135,7 +135,7 @@ wordcloud(freqFrame$Var1,freqFrame$Freq,
           ordered.colors=FALSE,use.r.layout=FALSE,
           fixed.asp=TRUE)
 
-#發現市長非常重視高雄，因為在詞頻統計下，得到最高的數字，再由文字雲看出，在他目前對高雄的規劃下，相當重視食品、環境、水質、與國際接軌的關係...等
+#發現市長非常重視高雄，因為在詞頻統計下，得到最高的數字，再由文字雲看出，在他目前對高雄的規劃下，相當重視環境、水質、與國際接軌的關係...等
 
 
 ```
