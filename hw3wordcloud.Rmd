@@ -31,7 +31,7 @@ library(Matrix)
 
 prefex = "https://graph.facebook.com/v2.10/"
 #會變得
-token  = "EAACEdEose0cBAI0H7cOYWJTc8RvRGCQLgsLUKLKf1D793ZCObO7RhFFFHXL0yB5eMHmmuolZAn4qJJFtlOeSZCsPo1xz0MN9AoughihMCuOUHkBhikYHZCs7mZBdWpsYfYwQlZCSMRVA5fFnooe8vbdlZBkPjNxaC2GXZCa33AEshTV7ATyEoUDCTaaMGUyZADJHl3mZAsNBtbFwZDZD"
+token  = "EAACEdEose0cBAB1GyZBf34ef0xSIZCVshJCbJe4mrSFR4YPGc7mUVwHqSOLRh28o6Go3wTMHvQMuFZC1k7cpwdVnW1HpOM8rRxVucx1SHYndu2dSJvZB06JZCnJEUTFlN3QCok3JpJAG1Iql3bilxuUCn4cAnGWKgSpQxSej1cpnxMZA1MeqhXvu4LXf5McrHbZAuuVgSlLfAZDZD"
 number=1
 #把正確的fb網址接起來
 attrs  = paste0("232716627404/posts?limit=",number,"&until=2017-10-31&since=2017-10-25&access_token=")
@@ -129,9 +129,9 @@ seg = lapply(docs, jieba_tokenizer)
 freqFrame = as.data.frame(table(unlist(seg)))
 #畫出文字雲
 wordcloud(freqFrame$Var1,freqFrame$Freq,
-          min.freq=5,max.words=40,
+          min.freq=3,
           random.order=TRUE,random.color=TRUE, 
-          rot.per=.1, colors=brewer.pal(8, "Dark2"),
+          rot.per=.1, colors=rainbow(length(row.names(freqFrame))),
           ordered.colors=FALSE,use.r.layout=FALSE,
           fixed.asp=TRUE)
 
