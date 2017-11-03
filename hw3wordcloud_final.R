@@ -120,9 +120,9 @@ seg = lapply(docs, jieba_tokenizer)
 freqFrame = as.data.frame(table(unlist(seg)))
 #畫出文字雲
 wordcloud(freqFrame$Var1,freqFrame$Freq,
-          min.freq=5,max.words=40,
+          min.freq=3,
           random.order=TRUE,random.color=TRUE, 
-          rot.per=.1, colors=brewer.pal(8, "Dark2"),
+          rot.per=.1, colors=rainbow(length(row.names(freqFrame))),
           ordered.colors=FALSE,use.r.layout=FALSE,
           fixed.asp=TRUE)
 
