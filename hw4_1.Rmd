@@ -1,0 +1,137 @@
+---
+title: "hw4_1"
+author: "b03801053公衛四劉倢如"
+date: "2017年11月22日"
+output: html_document
+---
+
+承接hw3臉書主題，分析連續不同天文本的關係
+
+```{r setup, include=FALSE}
+#載入一些需要的套件
+library(NLP)
+library(tm)
+#library(tmcn)
+#Sys.setenv(JAVA_HOME="/Users/liuqieru/Desktop/jdk-9.0.1/")
+library(rJava)
+library(SnowballC)
+library(slam)
+library(Matrix)
+```
+
+
+```{r}
+#import data
+source("hw3txt.R")
+```
+
+
+```{r}
+#corpus to tdm
+d.corpus <- Corpus(VectorSource(seg))
+```
+
+由於作業3文字雲主題，可以看出高雄市長發文裡面，"高雄"的字詞在各篇文章中，占有很高的比例，因此利用相關係數，尋找相關性0.7以上與高雄相關的字，利用位置1的"優質"與位置53的"商機"，來看看各篇文本相關的關係
+
+```{r }
+#沒有做過數學權重的tdm
+##到這裡就整理出將鋸子拆開來的矩陣檔
+tdm <- TermDocumentMatrix(d.corpus, 
+       control = list(wordLengths = c(1, Inf)))
+#View(inspect(tdm[1:9, 1:11]))
+
+ass = findAssocs(tdm, "高雄", 0.70)
+ass
+```
+
+
+```{r}
+# tf-idf computation
+N = tdm$ncol
+tf <- apply(tdm, 2, sum)
+idfCal <- function(word_doc)
+{ 
+  log2( N / nnzero(word_doc) ) 
+}
+idf <- apply(tdm, 1, idfCal)
+
+
+doc.tfidf <- as.matrix(tdm)
+for(x in 1:nrow(tdm))
+{
+  for(y in 1:ncol(tdm))
+  {
+    doc.tfidf[x,y] <- (doc.tfidf[x,y] / tf[y]) * idf[x]
+  }
+}
+
+
+# 畫出 tf-idf 統計圖
+library(plotly)
+topID = lapply(rownames(as.data.frame(ass)), function(x) 
+  which(rownames(tdm) == x))
+topID = unlist(topID)
+plot_ly(data = as.data.frame(doc.tfidf),
+        x = as.numeric(colnames(doc.tfidf)),
+        y = doc.tfidf[topID[1],], 
+        name = rownames(doc.tfidf)[topID[1]],
+        type = "scatter", mode= "box") %>%
+add_trace(y = doc.tfidf[topID[53],],
+          name = rownames(doc.tfidf)[topID[53]])
+
+```
+
+
+於是發現，第10篇文章，是"優質"與"商機"最相關的文章；而第6篇與第10篇文本都是與優質相關的文章
+
+
+
+再來是看文章之間 的相關性，利用cos similarity來看
+
+```{r}
+# get short doc matrix
+nonzero = (doc.tfidf != rep(0,11))
+nonzeroid = which(row_sums(nonzero) != 0)
+q <- rownames(doc.tfidf[nonzeroid,])
+all.term <- rownames(doc.tfidf)
+loc <- which(all.term %in% q)
+s.tdm <- doc.tfidf[loc,]
+View(s.tdm)
+
+# result : cos similarity ranking
+
+
+cos.sim <- function(x, y)
+{ 
+  (as.vector(x) %*% as.vector(y)) / (norm(as.matrix(x)) * norm(y)) 
+}
+
+doc.cos <- apply(s.tdm[,1:11], 2, cos.sim,
+                 y=as.matrix(s.tdm[,11]))
+orderDoc <- doc.cos[order(doc.cos, decreasing = TRUE)]
+plot_ly(data = as.data.frame(orderDoc),
+        x = rownames(as.data.frame(orderDoc)),
+        y = orderDoc, 
+        name = rownames(doc.tfidf)[topID[1]],
+        type = "bar", mode= "box")
+```
+
+藉由圖發現第11篇與第8篇文本的相關性可能是最高的，而回顧文本內容，也可以看出這兩篇主要內容是與國際接軌有關係的文章
+
+
+```{r}
+#cluster analysis
+tdm_removed<-removeSparseTerms(tdm, 0.60)    #降维，去除了低於60% 的稀疏词
+length(tdm_removed$dimnames$Terms)                #查看降维之後剩下多少詞
+#mydata <- as.data.frame(tdm_removed)
+mydata.scale<-scale(tdm_removed)                       
+d<-dist(mydata.scale,method="euclidean")        #计算矩陣距離
+fit <- hclust(d, method="ward.D2")
+plot(fit)
+```
+
+
+再來藉由cluster analysis的分群狀況，不考慮助詞的情況下，根據關鍵詞字眼，可以大致分成4群
+
+
+
