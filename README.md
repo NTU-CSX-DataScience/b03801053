@@ -7,7 +7,7 @@
 
 作業三：選擇一個臉書主題來做文字雲 https://ntu-csx-datascience.github.io/b03801053/hw3wordcloud.html
 
-作業四：承接作業3,運用tf_idf來作文本分析
-https://ntu-csx-datascience.github.io/b03801053/hw4_1.html
+作業四：承接作業3,運用tf_idf來做文本分析
+Part1: https://ntu-csx-datascience.github.io/b03801053/hw4_1.html
 
-https://ntu-csx-datascience.github.io/b03801053/hw4_2.html
+Part2:https://ntu-csx-datascience.github.io/b03801053/hw4_2.html
