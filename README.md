@@ -15,4 +15,4 @@ Part2:https://ntu-csx-datascience.github.io/b03801053/hw4_2.html
 
 *shiny https://jane.shinyapps.io/airnew/
 
-*shiny practeice date http://127.0.0.1:7897/
+*shiny practeice date http://127.0.0.1:5235/
