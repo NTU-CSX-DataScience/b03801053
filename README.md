@@ -13,6 +13,10 @@ Part1: https://ntu-csx-datascience.github.io/b03801053/hw4_1.html
 Part2:https://ntu-csx-datascience.github.io/b03801053/hw4_2.html
 
 作業五:利用t-test,anova來分析桃園市嫌疑犯人數與不同性別、不同教育程度的影響
+https://ntu-csx-datascience.github.io/b03801053/hw5.html
+
+
+
 *shiny https://jane.shinyapps.io/airnew/
 
 
