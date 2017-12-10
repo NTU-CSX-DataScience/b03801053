@@ -13,6 +13,9 @@ Part1: https://ntu-csx-datascience.github.io/b03801053/hw4.html
 作業五:利用t-test,anova來分析桃園市嫌疑犯人數與不同性別、不同教育程度的影響
 https://ntu-csx-datascience.github.io/b03801053/hw5.html
 
+利用lm來分析因子對新生兒肺功能的影響，及運用SVM預測
+https://ntu-csx-datascience.github.io/b03801053/hw5_lm_SVM.html
+
 
 
 *shiny https://jane.shinyapps.io/airnew/
