@@ -31,7 +31,8 @@ dta$count <- as.numeric(dta$count)
 summary(dta)
 ```
 
-此筆資料中，有不同男女及不分男女的嫌疑犯人數，因此想看看性別對嫌疑犯人數的影響；以及最高教育程度與嫌疑犯人數的關係
+想看看此筆資料性別對嫌疑犯人數的影響；以及最高教育程度與嫌疑犯人數的關係
+
 
 
 ```{r}
@@ -44,12 +45,9 @@ ggplot(data = dta, aes(x = sex, y = count)) +
   geom_boxplot() + coord_flip() +
   labs( y = 'count', x = 'sex', 
         title = 'Taoyuan City suspects and sex relationship')
-#發現不分性別的情況下，嫌疑犯的人數是最高的；次高的是男生的部分
 ```
 
-
-發現不分性別的情況下，嫌疑犯的人數是最高的；次高的是男生的部分
-
+發現男性的嫌疑犯人數高於女生
 
 ```{r}
 #只看男女兩性別
@@ -61,6 +59,8 @@ var.test(dta1$count[dta1$sex=="女"],dta1$count[dta1$sex=="男"])
 
 p-value=0.6329>0.05故無法拒絕虛無假說，因此假設兩組樣本的母體變異數相等
 
+
+
 ```{r}
 #以t檢定比較不同性別的嫌疑犯數量差異
 #變異數同值下的 t 檢定
@@ -69,6 +69,9 @@ t.test(dta1$count~factor(dta1$sex))
 ```
 
 p-value=0.09537>0.05，無法拒絕虛無假說，男生的嫌疑犯人數確實比女生多，性別是會影響嫌疑犯人數的
+
+
+
 
 
 整理資料
@@ -89,6 +92,10 @@ ggplot(a, aes(x=medu, y=mcount)) + geom_bar(stat="identity", fill="#FF9999", col
 
 可以看出教育程度不同，以國中的嫌疑犯人數最多
 
+
+
+
+
 看不同教育程度下的嫌疑犯平均數
 
 ```{r}
@@ -96,6 +103,10 @@ tapply(dta$count, dta$e_clasee, mean)
 ```
 
 最高教育程度在國中者，平均所算出來的嫌疑犯人數最高
+
+
+
+
 
 看不同教育的嫌疑犯人數差異，以圖來表示
 
@@ -122,6 +133,10 @@ ggplot(data = dta,
 
 情況如同平均數的呈現
 
+
+
+
+
 ```{r}
 #因為教育程度有多種類別，用anova檢定
 #H0:最高教育程度不同對嫌疑犯的人數沒有影響
@@ -130,6 +145,10 @@ summary(anova.result)
 ```
 
 p-value=0.00078<0.05故拒絕虛無假說，最高教育程度不同，是會對嫌疑犯人數有影響的
+
+
+
+
 
 ```{r}
 ggplot(dta, aes(x=factor(e_clasee), y=count,fill=sex)) +
