@@ -1,0 +1,80 @@
+---
+title: "hw5_lm&SVM"
+author: "b03801053公衛四劉倢如"
+date: "2017年12月9日"
+output: html_document
+---
+
+載入套件
+
+```{r setup}
+library(e1071)
+library(ggplot2)
+library(caret)
+```
+
+ 整理資料
+
+```{r }
+dfev <- read.csv("fev.csv")
+dfev <- dfev[,c(2:4,6)]
+```
+
+想要看新生兒肺功能指數是否會受到年齡、周遭抽菸因子的影響
+畫出年齡與肺功能的散布圖，並加上受到的不同抽菸狀態影響的呈現突
+
+```{r}
+g<-ggplot(data=dfev,aes(x =FEV , y = Age)) 
+g1 <- g + geom_point(aes(color = Smoker))
+g1
+```
+
+利用線性回歸模型來看看關係
+H0:肺功能不會受到年齡、抽菸與否的影響
+```{r}
+m1 <- lm(FEV~Age+Smoker,data=dfev)
+summary(m1)
+```
+
+發現年紀與是否抽菸的p-value均<0.05，固可推測二者確實會對新生兒的肺功能有影響
+
+
+進一步看看抽菸與年齡是否會產生交互作用，對新生兒的肺功能有影響
+
+```{r}
+m2 <- lm(FEV~Age*Smoker,data=dfev)
+summary(m2)
+```
+
+發現年齡與抽菸的交互作用項，其p-value<0.05，固可推測二者會產生交互作用並且對新生兒的肺功能有影響
+
+
+
+
+
+
+SVM來預測新生兒周邊環境抽菸情形
+
+```{r SVM}
+#建模型
+x <- subset(dfev,select = -Smoker)
+y <- dfev$Smoker
+model <- svm(Smoker~.,data = dfev,cost= 10,kernal = "radial", scale = FALSE)
+print(model)
+```
+
+
+```{r}
+#預測:x與y是在對正確答案
+presult <- predict(model,x)
+```
+
+confusion matrix
+
+```{r}
+confusionMatrix(presult,y)
+
+```
+
+結論:由於此筆資料，雖然未抽菸者在整筆資料裡面明顯占有多數，但此模型預測的準確率有高達94%，精準的預測出抽菸與未抽菸的人
+
