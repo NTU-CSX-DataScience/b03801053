@@ -8,10 +8,10 @@
 作業三：選擇一個臉書主題來做文字雲 https://ntu-csx-datascience.github.io/b03801053/hw3wordcloud.html
 
 作業四：承接作業3,運用tf_idf來做文本分析
-https://ntu-csx-datascience.github.io/b03801053/hw4k.html
+https://ntu-csx-datascience.github.io/b03801053/hw4f.html
 
 作業五:利用t-test,anova來分析桃園市嫌疑犯人數與不同性別、不同教育程度的影響
-https://ntu-csx-datascience.github.io/b03801053/hw5suspect.html
+https://ntu-csx-datascience.github.io/b03801053/hw5sus.html
 
 
 利用lm來分析因子對新生兒肺功能的影響，及運用SVM預測
