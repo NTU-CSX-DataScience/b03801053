@@ -1,0 +1,187 @@
+---
+title: "hw4_1"
+author: "b03801053公衛四劉倢如"
+date: "2017年11月22日"
+output: html_document
+---
+
+承接hw3臉書主題，分析連續不同天文本的關係
+
+```{r setup, include=FALSE}
+#載入一些需要的套件
+library(NLP)
+library(tm)
+#library(tmcn)
+#Sys.setenv(JAVA_HOME="/Users/liuqieru/Desktop/jdk-9.0.1/")
+library(rJava)
+library(SnowballC)
+library(slam)
+library(Matrix)
+```
+
+
+```{r}
+#import data
+source("hw3txt.R")
+```
+
+
+```{r}
+#corpus to tdm
+d.corpus <- Corpus(VectorSource(seg))
+```
+
+由於作業3文字雲主題，可以看出高雄市長發文裡面，"高雄"的字詞在各篇文章中，占有很高的比例，因此利用相關係數，尋找相關性0.7以上與高雄相關的字，利用位置1的"優質"與位置53的"商機"，來看看各篇文本相關的關係
+
+```{r }
+#沒有做過數學權重的tdm
+##到這裡就整理出將鋸子拆開來的矩陣檔
+tdm <- TermDocumentMatrix(d.corpus, 
+       control = list(wordLengths = c(1, Inf)))
+#View(inspect(tdm[1:9, 1:11]))
+
+ass = findAssocs(tdm, "高雄", 0.70)
+ass
+```
+
+
+```{r}
+# tf-idf computation
+N = tdm$ncol
+tf <- apply(tdm, 2, sum)
+idfCal <- function(word_doc)
+{ 
+  log2( N / nnzero(word_doc) ) 
+}
+idf <- apply(tdm, 1, idfCal)
+
+
+doc.tfidf <- as.matrix(tdm)
+for(x in 1:nrow(tdm))
+{
+  for(y in 1:ncol(tdm))
+  {
+    doc.tfidf[x,y] <- (doc.tfidf[x,y] / tf[y]) * idf[x]
+  }
+}
+
+
+# 畫出 tf-idf 統計圖
+library(plotly)
+topID = lapply(rownames(as.data.frame(ass)), function(x) 
+  which(rownames(tdm) == x))
+topID = unlist(topID)
+plot_ly(data = as.data.frame(doc.tfidf),
+        x = as.numeric(colnames(doc.tfidf)),
+        y = doc.tfidf[topID[1],], 
+        name = rownames(doc.tfidf)[topID[1]],
+        type = "scatter", mode= "box") %>%
+add_trace(y = doc.tfidf[topID[53],],
+          name = rownames(doc.tfidf)[topID[53]])
+
+```
+
+
+於是發現，第10篇文章，是"優質"與"商機"最相關的文章；而第6篇與第10篇文本都是與優質相關的文章
+
+
+
+再來是看文章之間 的相關性，利用cos similarity來看
+
+```{r}
+# get short doc matrix
+nonzero = (doc.tfidf != rep(0,11))
+nonzeroid = which(row_sums(nonzero) != 0)
+q <- rownames(doc.tfidf[nonzeroid,])
+all.term <- rownames(doc.tfidf)
+loc <- which(all.term %in% q)
+s.tdm <- doc.tfidf[loc,]
+View(s.tdm)
+
+# result : cos similarity ranking
+
+
+cos.sim <- function(x, y)
+{ 
+  (as.vector(x) %*% as.vector(y)) / (norm(as.matrix(x)) * norm(y)) 
+}
+
+doc.cos <- apply(s.tdm[,1:11], 2, cos.sim,
+                 y=as.matrix(s.tdm[,11]))
+orderDoc <- doc.cos[order(doc.cos, decreasing = TRUE)]
+plot_ly(data = as.data.frame(orderDoc),
+        x = rownames(as.data.frame(orderDoc)),
+        y = orderDoc, 
+        name = rownames(doc.tfidf)[topID[1]],
+        type = "bar", mode= "box")
+```
+
+藉由圖發現第11篇與第8篇文本的相關性可能是最高的，而回顧文本內容，也可以看出這兩篇主要內容是與國際接軌有關係的文章
+
+
+
+
+藉由k-means來做分群
+
+```{r}
+str(doc.tfidf)
+summary(doc.tfidf)
+
+
+set.seed(11)#因為有11篇文章
+kmeansOut <- kmeans(doc.tfidf, 2, nstart = 50)
+plot(doc.tfidf, col =(kmeansOut$cluster +1) , main="article analysis", pch=18, cex=2)
+
+
+mydata <- doc.tfidf
+wss <- (nrow(mydata)-1)*sum(apply(mydata,2,var))
+for (i in 1:20) wss[i] <- sum(kmeans(mydata,
+                                     centers=i)$withinss)
+plot(1:20, wss, type="b", xlab="Number of Clusters",
+     ylab="Within groups sum of squares",
+     main="Assessing the Optimal Number of Clusters with the Elbow Method",
+     pch=20, cex=2)
+
+
+set.seed(11)
+km2 = kmeans(mydata, 13, nstart=50)
+
+# Examine the result of the clustering algorithm
+
+
+plot(mydata,  col =c(1:13), main="K-Means result with 13 clusters",pch =  20 ,cex=2)
+legend('topright',c('國際、比賽','整治、改造','漁業','產學、地方發展','處理','藝術','經濟、優質','高雄綜合發展','土地','服務、幸福','表演','宗教信仰','醫療服務'),col = c(1:13),pch = 20,bty='n', cex=.75)
+
+
+```
+
+
+藉由k-means作分群
+1.一開始先分成兩群畫圖看看，發現組間/組內的變異很小
+
+2.藉由找到最佳分群的方法，分成13群，可以看出組間/組內的變異變大，因此分群現象清楚
+但由於kmeans抓出來的字詞是從各篇文章抓出相近的一些字詞，發現出現的頻率相近，故根據分群的結果，做判斷後，給定比較大的分類項目名稱，分類過程中，明顯發現分群到第四與第六與第九群的字詞非常的少，發現整治、改造與產學、及地方發產有比較高的關係
+
+
+
+再來利用PCA降維，來看看能分成幾群
+
+```{r warning=FALSE}
+#install.packages("devtools")
+library(devtools)
+#install_github("ggbiplot","vqv")
+library(scales)
+library(grid)
+library(ggbiplot)
+
+
+
+
+testTfidf = doc.tfidf
+tfidf.pca <- prcomp(testTfidf)
+
+#讓文字顯示成中文
+biplot(tfidf.pca)
+```
+
+發現經過降維之後，抓下來的11篇文章中以，第一篇、第四篇、第五篇分群現象最明顯
