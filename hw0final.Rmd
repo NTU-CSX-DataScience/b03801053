@@ -1,0 +1,54 @@
+---
+title: "hw0"
+author: "b03801053 公衛四劉倢如"
+date: "2017/9/14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+Sys.setlocale(locale="zh_TW.UTF-8")
+```
+
+
+
+## 題目：想尋找季節與月平均的AQI指標氣體濃度值在北中南花東及離島地區分布不同的關係
+
+一開始：
+資料源：
+1.環保署空氣品質監測網，有全年逐時資料
+https://taqm.epa.gov.tw/taqm/tw/YearlyDataDownload.aspx
+
+圖表呈現方式：
+1.不同年份不同地區月平均PM2.5濃度變化趨勢(折線圖)
+2.與中國大陸國家做比較(歷年折線圖，圓餅圖)
+3.搭配AQI指標對照不同年之不同地去的值來顯示，並搭配AQI顏色分類，對下一年度來進行空品預測，做一些防護宣導
+(台灣區塊圖)
+
+異質來源圖表產生
+與中國大陸來做比較
+http://datacenter.mep.gov.cn:8099/ths-report/report!list.action?xmlname=1462259560614
+
+##期末project：
+利用
+https://pm25.lass-net.org/zh_tw/
+政府PM2.5 開放資料入口網站，爬下資料，選定台中火力發電廠附近的幾個測站來分析空氣品質狀況
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE} 
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
