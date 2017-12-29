@@ -15,7 +15,7 @@ https://ntu-csx-datascience.github.io/b03801053/hw5sus.html
 
 
 利用lm來分析因子對新生兒肺功能的影響，及運用SVM預測
-https://ntu-csx-datascience.github.io/b03801053/hw5lm_SVM.html
+https://ntu-csx-datascience.github.io/b03801053/hw5lm,SVM.html
 
 
 
