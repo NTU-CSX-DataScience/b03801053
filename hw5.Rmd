@@ -1,0 +1,253 @@
+---
+title: "hw5"
+author: "b03801053公衛四劉倢如"
+date: "2017年11月28日"
+output: html_document
+---
+
+此筆資料是政府開放資料中，桃園市嫌疑犯人數與不同性別、不同教育程度的統計資料
+
+```{r}
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(magrittr)
+```
+
+```{r }
+#匯入資料
+dta <-  read.csv(file = "m_edu.csv", header = TRUE)
+```
+
+
+
+```{r }
+#整理資料，把嫌疑犯人數都換成數值資料
+dta$count <- as.numeric(dta$count)
+```
+
+
+```{r}
+#看資料基本統計
+summary(dta)
+```
+
+想看看此筆資料性別對嫌疑犯人數的影響；以及最高教育程度與嫌疑犯人數的關係
+
+```{r}
+#載進 ggplot2 準備畫圖
+require(ggplot2)
+#底下的圖都用黑白配色（theme_bw）
+old <- theme_set(theme_bw())
+#看不同性別的盒鬚圖
+ggplot(data = dta, aes(x = sex, y = count)) +
+  geom_boxplot() + coord_flip() +
+  labs( y = 'count', x = 'sex', 
+        title = 'Taoyuan City suspects and sex relationship')
+```
+
+若只以嫌疑犯人數來看，則發現男性的嫌疑犯人數高於女生
+
+```{r}
+#只看男女兩性別
+dta1 <-  dta[-which(dta$sex=="全性別"),]
+#檢驗兩組樣本的母體變異數
+#H0:兩組樣本的母體變異數相等
+var.test(dta1$count[dta1$sex=="女"],dta1$count[dta1$sex=="男"])
+```
+
+p-value=0.6329>0.05故無法拒絕虛無假說，因此假設兩組樣本的母體變異數相等
+
+
+
+
+利用t檢定分析
+
+```{r}
+#以t檢定比較不同性別的嫌疑犯數量差異
+#變異數同值下的 t 檢定
+#H0:男生的嫌疑犯人數比女生多
+t.test(dta1$count~factor(dta1$sex))
+```
+
+p-value=0.09537>0.05，無法拒絕虛無假說，男生的嫌疑犯人數確實比女生多
+
+
+```{r}
+#整理資料
+#將不同教育程度者，加總嫌疑犯人數
+a <- select(dta1,year,e_clasee,count,sex) %>%
+        group_by(e_clasee)
+#重新命名欄位名稱
+colnames(a) <-c("year","edu","count","gender")
+```
+
+
+
+看不同教育程度下的嫌疑犯平均數
+
+```{r}
+tapply(a$count, a$edu, mean)
+```
+
+
+
+最高教育程度在國中者，平均所算出來的嫌疑犯人數最多
+
+
+
+
+
+看不同教育的嫌疑犯人數差異，以圖來表示
+
+```{r}
+#不同教育程度
+a$edu <- factor(a$edu, levels = c('不識字',
+                                            '自修',
+                                            '國小',
+                                            '國中', 
+                                            '高中(職)','大專','研究所','其他'))
+library(Hmisc)
+ggplot(data = a, 
+       aes(x = edu, y = count))+
+  stat_summary(fun.data = 'mean_cl_boot', size = 1) +
+  scale_y_continuous(breaks = seq(90, 200, by = 20))+
+  geom_hline(yintercept = mean(a$edu) , 
+             linetype = 'dotted') +
+  labs(x = '最高教育程度', y = '嫌疑犯人數') +
+  coord_flip()
+
+```
+
+情況如同平均數的呈現
+
+
+
+
+
+```{r}
+#因為教育程度有多種類別，用anova檢定
+#H0:最高教育程度不同對嫌疑犯的人數沒有影響
+anova.result <- aov( count ~ edu, data = a)
+summary(anova.result)
+```
+
+p-value=0.0126<0.05故拒絕虛無假說，最高教育程度不同，是會對嫌疑犯人數有影響的
+
+但是我們應該要看比例!
+
+```{r}
+#全部不分性別的情況
+#91年教育程度資料
+T91<-read_xlsx("91桃園.xlsx")
+as <- select(dta,year,e_clasee,count,sex) %>%
+        filter(year=="91") 
+d<-group_by(as,e_clasee)%>%
+  summarise(sum(count))
+
+#與91年嫌疑犯人數資料做合併
+names(d)<-c("edu","count")
+d$edu<-as.character(d$edu)
+joinnew<-left_join(d,T91,by = c("edu","edu"))
+joinnew1<-  joinnew[-which(complete.cases(joinnew)=="FALSE"),]
+names(joinnew1)<-c("edu","count","total")
+ggplot(joinnew1, aes(x=edu, y=count/total)) + geom_bar(colour = 'red',stat="identity")
+
+#103年教育程度資料
+T103<-read_xlsx("桃園103.xlsx")
+as <- select(dta,year,e_clasee,count,sex) %>%
+  filter(year=="103") 
+d<-group_by(as,e_clasee)%>%
+  summarise(sum(count))
+
+#與103年嫌疑犯人數資料做合併
+names(d)<-c("edu","count")
+d$edu<-as.character(d$edu)
+joinnew<-left_join(d,T103,by = c("edu","edu"))
+joinnew2<-  joinnew[-which(complete.cases(joinnew)=="FALSE"),]
+names(joinnew2)<-c("edu","count","total")
+p = joinnew2$count/joinnew2$total
+ggplot(joinnew2, aes(x=edu, y=p)) + geom_bar(colour = 'red',stat="identity")
+
+```
+
+
+
+```{r}
+#91 女
+asf91 <- select(dta,year,e_clasee,count,sex) %>%
+  filter(year=="91",sex=="女") 
+df1<-group_by(asf91,e_clasee)%>%
+  summarise(sum(count))
+
+names(df1)<-c("edu","count")
+df1$edu<-as.character(df1$edu)
+fjoinnew<-left_join(df1,T103,by = c("edu","edu"))
+f2joinnew<-  fjoinnew[-which(complete.cases(fjoinnew)=="FALSE"),]
+names(f2joinnew)<-c("edu","count","total")
+p = f2joinnew$count/f2joinnew$total
+ggplot(f2joinnew, aes(x=edu, y=p)) + geom_bar(stat="identity")
+
+#91 男
+asm91 <- select(dta,year,e_clasee,count,sex) %>%
+  filter(year=="91",sex=="男") 
+dm1<-group_by(asm91,e_clasee)%>%
+  summarise(sum(count))
+
+names(dm1)<-c("edu","count")
+dm1$edu<-as.character(dm1$edu)
+mjoinnew<-left_join(dm1,T103,by = c("edu","edu"))
+m2joinnew<-  mjoinnew[-which(complete.cases(mjoinnew)=="FALSE"),]
+names(m2joinnew)<-c("edu","count","total")
+p = m2joinnew$count/m2joinnew$total
+ggplot(m2joinnew, aes(x=edu, y=p)) + geom_bar(colour = 'pink',stat="identity")
+
+
+
+```
+```{r}
+#分男女來看
+#103 女
+as1 <- select(dta,year,e_clasee,count,sex) %>%
+  filter(year=="103",sex=="女") 
+d1<-group_by(as1,e_clasee)%>%
+  summarise(sum(count))
+
+names(d1)<-c("edu","count")
+d1$edu<-as.character(d1$edu)
+fjoinnew<-left_join(d1,T103,by = c("edu","edu"))
+f2joinnew<-  fjoinnew[-which(complete.cases(fjoinnew)=="FALSE"),]
+names(f2joinnew)<-c("edu","count","total")
+p = f2joinnew$count/f2joinnew$total
+ggplot(f2joinnew, aes(x=edu, y=p)) + geom_bar(stat="identity")
+
+#103 男
+as2 <- select(dta,year,e_clasee,count,sex) %>%
+  filter(year=="103",sex=="男") 
+d2<-group_by(as2,e_clasee)%>%
+  summarise(sum(count))
+
+names(d2)<-c("edu","count")
+d2$edu<-as.character(d1$edu)
+mjoinnew<-left_join(d2,T103,by = c("edu","edu"))
+m2joinnew<-  mjoinnew[-which(complete.cases(mjoinnew)=="FALSE"),]
+names(m2joinnew)<-c("edu","count","total")
+p = m2joinnew$count/m2joinnew$total
+ggplot(m2joinnew, aes(x=edu, y=p)) + geom_bar(colour = 'pink',stat="identity")
+
+```
+
+
+
+
+1.結論圖:以比例圖來看早年份的91年與103年均可以發現自修者是在嫌疑犯比例中占比較高的
+而細看男女的圖:
+則發現91年男女均是以自修和不識字的比例比較高，而男生的比例則高於女生
+
+到103男女的比較圖:
+女生在103年以自修和不識字的比例比較高
+而男生則是不識字的比例最高，其次為國小與研究所，相較於91年，自修比例降低，而研究所與國小的比例稍微上升
+
+但是整體來說，103年的嫌疑犯比例都有比91年的比例下降
+
+2.此資料因為影響的項目為類別資料(性別、教育程度)，受限而沒有使用相關係數與回歸來進一步分析，若未來有加入其他數值資料，則可探討在相同的教育程度下或相同性別下，另一數值變項每增加一單位對嫌疑犯人數的影響，便能掌握什麼變項影響最大
