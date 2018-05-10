@@ -18,6 +18,8 @@ https://ntu-csx-datascience.github.io/b03801053/hw5.html
 https://ntu-csx-datascience.github.io/b03801053/hw5lm,SVM.html
 
 
+final project:http://homepage.ntu.edu.tw/~b04701204/CSXFall2017/index.html
+
 
 *shiny https://jane.shinyapps.io/airnew/
 
